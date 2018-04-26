@@ -16,28 +16,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with ARA.  If not, see <http://www.gnu.org/licenses/>.
 
-required_packages:
-  - gcc
-  - libffi-devel
-  - libselinux-python
-  - libxml2-devel
-  - libxslt-devel
-  - openssl-devel
-  - python-devel
-  - python-setuptools
-  - redhat-rpm-config
-  - which
-
-required_wsgi_packages:
-  - httpd
-  - mod_wsgi
-
-apache_service: httpd
-apache_user: apache
-apache_group: apache
-apache_log_path: /var/log/httpd
-apache_config_path: /etc/httpd/conf.d
-
-nginx_user: nginx
-nginx_group: nginx
-nginx_config_path: /etc/nginx/conf.d
+# This runs the ARA role with parameters to set up nginx as a reverse proxy to
+# the embedded server. The web application will be available on '/ara'.
+- name: Install ARA with nginx as reverse proxy to the embedded server
+  hosts: localhost
+  vars:
+    ara_override:
+      config:
+        application_root: /ara
+      deployment:
+        server: nginx
+        type: embedded_proxy
+  roles:
+    - ara

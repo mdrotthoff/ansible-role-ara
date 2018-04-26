@@ -1,33 +1,48 @@
 ---
-#   Copyright 2017 Red Hat, Inc. All Rights Reserved.
+#  Copyright (c) 2018 Red Hat, Inc.
 #
-#   Licensed under the Apache License, Version 2.0 (the "License"); you may
-#   not use this file except in compliance with the License. You may obtain
-#   a copy of the License at
+#  This file is part of ARA Records Ansible.
 #
-#       http://www.apache.org/licenses/LICENSE-2.0
+#  ARA is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
 #
-#   Unless required by applicable law or agreed to in writing, software
-#   distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#   WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#   License for the specific language governing permissions and limitations
-#   under the License.
+#  ARA is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with ARA.  If not, see <http://www.gnu.org/licenses/>.
 
-# Default paths where an ansible.cfg file is expected
-default_embedded_config_path: "{{ lookup('env','HOME') }}"
-default_wsgi_config_path: "/var/www/ara"
+ara:
+  config:
+    database: "sqlite:////var/lib/ara/ansible.sqlite"
+    # Host to listen on for embedded server, apache or nginx
+    host: "{{ ansible_default_ipv4.address }}"
+    # Port to listen on for embedded server or apache
+    port: 9191
+    # Root (or prefix) for the web application location
+    application_root: /
+    # Directory where files are stored by default
+    dir: /var/lib/ara
+    # Path to the logging configuration
+    logconfig: /etc/ara/logging.yml
+    # Where logs are located
+    logfile: /var/log/ara/ara.log
+  deployment:
+    # Server (apache, embedded, nginx)
+    server: embedded
+    # Type (mod_wsgi, standalone, embedded-proxy, etc.)
+    type: standalone
+    nginx:
+      # Where nginx will store the proxy cache
+      cache_directory: /var/cache/nginx
 
-# Override the path where an ansible.cfg file will be used
-# config_path:
+# You can use a variable called ara_override to use custom configuration
+# parameters.
 
-# Host to listen on for embedded server or apache
-ara_host: "localhost"
-
-# Port to listen on for embedded server or apache
-ara_port: "9191"
-
-# Deploy with apache and mod_wsgi
-mod_wsgi: false
-
-# Deploy with persistent embedded_webserver
-embedded_server: true
+# ara_override:
+#   config:
+#     database: "mysql+pymysql://ara:password@localhost/ara"

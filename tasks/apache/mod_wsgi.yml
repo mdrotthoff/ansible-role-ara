@@ -1,0 +1,64 @@
+---
+#  Copyright (c) 2018 Red Hat, Inc.
+#
+#  This file is part of ARA Records Ansible.
+#
+#  ARA is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  ARA is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with ARA.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: Install required dependencies for mod_wsgi
+  become: true
+  package:
+    name: "{{ required_wsgi_packages }}"
+    state: "present"
+
+- name: Set selinux boolean to allow Apache to manage the files
+  become: true
+  seboolean:
+    name: httpd_unified
+    state: yes
+  when: ansible_os_family == "RedHat"
+
+- name: Get the location of the WSGI script
+  command: which ara-wsgi
+  register: wsgi_location
+  changed_when: false
+
+- name: Set the location of the WSGI script
+  set_fact:
+    wsgi_script: "{{ wsgi_location.stdout }}"
+
+- name: Set up Apache configuration
+  become: true
+  template:
+    src: apache_mod_wsgi.conf.j2
+    dest: "{{ apache_config_path }}/ara.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart apache
+
+- name: Ensure Apache server is started
+  become: true
+  systemd:
+    state: started
+    name: "{{ apache_service }}"
+    enabled: true
+
+- name: Ensure the configuration is enabled
+  become: true
+  command: a2ensite ara
+  when: ansible_os_family == "Debian"
+  notify:
+    - restart apache
